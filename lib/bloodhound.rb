@@ -63,7 +63,7 @@ class Bloodhound
   end
 
   def define_scope(name, &scope)
-    @model.send(:named_scope, scope_name_for(name), scope)
+    @model.send(:scope, scope_name_for(name), scope)
   end
   private :define_scope
 
