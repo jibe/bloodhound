@@ -2,7 +2,7 @@ require "chronic"
 require "active_record"
 
 class Bloodhound
-  VERSION = "0.3.1"
+  VERSION = "0.3.2"
   ATTRIBUTE_RE = /\s*(?:(?:(\S+):)?(?:"([^"]*)"|'([^']*)'|(\S+)))\s*/.freeze
 
   attr_reader :fields
