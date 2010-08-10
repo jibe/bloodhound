@@ -22,6 +22,6 @@ spec/spec_helper.rb
 spec/bloodhound_spec.rb
 ]
 
-  spec.add_dependency('chronic')
+  s.add_dependency('chronic')
 end
 
