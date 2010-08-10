@@ -105,11 +105,17 @@ class Bloodhound
       conditions_for_string_search(field, value)
     when :float, :decimal, :integer
       conditions_for_numeric(field, value)
+    when :date, :datetime, :time
+      conditions_for_date(field, value)
     else
       { field[:attribute] => value }
     end
   end
   private :setup_conditions
+
+  def conditions_for_date(field, value)
+    ["#{field[:attribute]} = ?", value]
+  end
 
   def conditions_for_numeric(field, value)
     [ "#{field[:attribute]} #{value.condition} ?", value.to_s ]
