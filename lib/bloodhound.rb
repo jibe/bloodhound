@@ -53,6 +53,7 @@ class Bloodhound
   end
 
   def search(query)
+    query.gsub!(/\s/, "")
     self.class.tokenize(query).inject(@model) do |model, (key,value)|
       key, value = "text_search", key if value.nil?
 
@@ -91,7 +92,8 @@ class Bloodhound
     when :float, :decimal, :integer
       NumericExpression.new(value, type)
     when :date
-      Date.parse(Chronic.parse(value, :context => :past).to_s)
+      #Date.parse(Chronic.parse(value, :context => :past).to_s)
+      DateExpression.new(value)
     when :time, :datetime
       Chronic.parse(value)
     else
@@ -120,7 +122,7 @@ class Bloodhound
   end
 
   def conditions_for_date(field, value)
-    ["#{field[:attribute]} = ?", value]
+    [ "#{field[:attribute]} #{value.condition} ? ", value.value]
   end
 
   def conditions_for_numeric(field, value)
@@ -177,7 +179,7 @@ class Bloodhound
     def initialize(value, type)
       # allow additional spaces to be entered between conditions and value
       value.gsub!(/\s/, '')
-      parts = value.scan(/(?:[=<>]+|(?:\d|\.)+)/)[0,2]
+      parts = value.scan(/(?:[=<>]+|(?:-?\d|\.)+)/)[0,2]
       # Kernel#Float is a bit more lax about parsing numbers, like
       # Integer(0.0) fails, when we just want it interpreted as a zero
       @value = Float(parts.last)
@@ -200,6 +202,23 @@ class Bloodhound
 
     def to_s
       value.to_s
+    end
+  end
+  
+  class DateExpression
+    attr_reader :value, :condition
+
+    def initialize(value)
+      # allow additional spaces to be entered between conditions and value
+      value.gsub!(/\s/, '')
+      parts = value.scan(/(?:[=<>]+|(?:[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}))/)[0,2]
+      @value = Date.parse(Chronic.parse(parts.last).to_s).to_s
+      @condition = sanitize_condition(parts.first)
+    end
+
+    def sanitize_condition(cond)
+      valid = %w(= == > < <= >= <>)
+      valid.include?(cond) ? cond : "="
     end
   end
 end
