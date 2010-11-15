@@ -116,7 +116,7 @@ class Bloodhound
   private :setup_conditions
   
   def regexed?(value)
-    return value.strip[0].chr == '/' && value.strip[value.strip.size-1] == '/'
+    return value.strip[0].chr == '/' && value.strip[value.strip.size-1].chr == '/'
   end
 
   def conditions_for_date(field, value)
@@ -143,7 +143,8 @@ class Bloodhound
     
     if field[:regexable] && regexed?(value)
       search_con = " REGEXP ? "
-      value_to_search = value
+      value_to_search = value.strip[1..value.strip.size-2]
+      field_to_search = field[:attribute]
     elsif field[:wildcard] && value_to_search.include?("*")
       value_to_search.gsub!(/[\*]/, "%")
     end
