@@ -142,10 +142,10 @@ class Bloodhound
       value_to_search = "%#{value_to_search}%"
     end
     
-    if field[:regexable] && regexed?(value)
+    if field[:regexable] && regexed?(value_to_search)
       search_con = " REGEXP ? "
-    elsif field[:wildcard] && value.include?("*")
-      value.gsub!(/[\*]/, "%")
+    elsif field[:wildcard] && value_to_search.include?("*")
+      value_to_search.gsub!(/[\*]/, "%")
     end
     
     [ "#{field_to_search} " + search_con, value_to_search ]
