@@ -18,7 +18,9 @@ class Bloodhound
       :type            => options.fetch(:type, :string).to_sym,
       :case_sensitive  => options.fetch(:case_sensitive, true),
       :match_substring => options.fetch(:match_substring, false),
-      :options         => options.except(:attribute, :type, :case_sensitive, :match_substring),
+      :regexable       => options.fetch(:regexable, false),
+      :wildcard        => options.fetch(:wildcard, false),
+      :options         => options.except(:attribute, :type, :case_sensitive, :match_substring, :regexable, :wildcard),
       :mapping         => mapping || default_mapping
     }
 
@@ -112,6 +114,11 @@ class Bloodhound
     end
   end
   private :setup_conditions
+  
+  def regexed?(value)
+    value = value.strip
+    return value[0].chr == '/' && value[value.size-1] == '/'
+  end
 
   def conditions_for_date(field, value)
     ["#{field[:attribute]} = ?", value]
@@ -122,6 +129,7 @@ class Bloodhound
   end
 
   def conditions_for_string_search(field, value)
+    search_con = " LIKE ? "
     if field[:case_sensitive]
       field_to_search = field[:attribute]
       value_to_search = value
@@ -129,10 +137,18 @@ class Bloodhound
       field_to_search = "lower(#{field[:attribute]})"
       value_to_search = value.downcase
     end
+    
     if field[:match_substring]
       value_to_search = "%#{value_to_search}%"
     end
-    [ "#{field_to_search} like ?", value_to_search ]
+    
+    if field[:regexable] && regexed?(value)
+      search_con = " REGEXP ? "
+    elsif field[:wildcard] && value.include?("*")
+      value.gsub!(/[\*]/, "%")
+    end
+    
+    [ "#{field_to_search} " + search_con, value_to_search ]
   end
   private :conditions_for_string_search
 
@@ -158,6 +174,8 @@ class Bloodhound
     attr_reader :value, :condition
 
     def initialize(value, type)
+      # allow additional spaces to be entered between conditions and value
+      value.gsub!(/\s/, '')
       parts = value.scan(/(?:[=<>]+|(?:\d|\.)+)/)[0,2]
       # Kernel#Float is a bit more lax about parsing numbers, like
       # Integer(0.0) fails, when we just want it interpreted as a zero
