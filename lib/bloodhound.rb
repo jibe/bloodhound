@@ -53,7 +53,7 @@ class Bloodhound
   end
 
   def search(query)
-    query.gsub!(/\s/, "")
+    #query.gsub!(/\s/, "")
     self.class.tokenize(query).inject(@model) do |model, (key,value)|
       key, value = "text_search", key if value.nil?
 
