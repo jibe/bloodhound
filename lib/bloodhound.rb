@@ -4,6 +4,7 @@ require "active_record"
 class Bloodhound
   VERSION = "0.3.2"
   ATTRIBUTE_RE = /\s*(?:(?:(\S+):)?(?:"([^"]*)"|'([^']*)'|(\S+)))\s*/.freeze
+  #ATTRIBUTE_RE = /\s*[a-zA-Z\s]+:[><=0-9a-zA-Z\s]+/.freeze
 
   attr_reader :fields
 
@@ -156,10 +157,12 @@ class Bloodhound
   private :conditions_for_string_search
 
   def self.tokenize(query)
-    query.scan(ATTRIBUTE_RE).map do |(key,*value)|
-      value = value.compact.first
-      [key || value, key && value]
-    end
+     # query.scan(ATTRIBUTE_RE).map do |(key,*value)|
+     #       key = key.strip
+     #       value = value.compact.first.strip
+     #       [key || value, key && value]
+     #     end
+    [[query.split(":").first.strip, query.split(":").last.strip]]
   end
 
   module Searchable
