@@ -127,7 +127,12 @@ class Bloodhound
   end
 
   def conditions_for_numeric(field, value)
-    [ "#{field[:attribute]} #{value.condition} ?", value.to_s ]
+    case value.condition.strip
+    when "="
+      [ "ABS(#{field[:attribute]}) = ABS(?) ", value.to_s ]
+    else
+      [ "#{field[:attribute]} #{value.condition} ? ", value.to_s ]
+    end
   end
 
   def conditions_for_string_search(field, value)
