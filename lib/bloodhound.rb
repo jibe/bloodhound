@@ -129,7 +129,7 @@ class Bloodhound
   def conditions_for_numeric(field, value)
     case value.condition.strip
     when "="
-      [ "ABS(#{field[:attribute]}) = ABS(?) ", value.to_s ]
+      [ "ABS(#{field[:attribute]}) > ? AND ABS(#{field[:attribute]}) < ?", value.abs.floor.to_s, (value.abs + 1).floor.to_s ]
     else
       [ "#{field[:attribute]} #{value.condition} ? ", value.to_s ]
     end
