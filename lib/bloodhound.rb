@@ -21,7 +21,8 @@ class Bloodhound
       :match_substring => options.fetch(:match_substring, false),
       :regexable       => options.fetch(:regexable, false),
       :wildcard        => options.fetch(:wildcard, false),
-      :options         => options.except(:attribute, :type, :case_sensitive, :match_substring, :regexable, :wildcard),
+      :aggregate       => options.fetch(:aggregate, false),
+      :options         => options.except(:attribute, :type, :case_sensitive, :match_substring, :regexable, :wildcard, :aggregate),
       :mapping         => mapping || default_mapping
     }
 
@@ -29,8 +30,14 @@ class Bloodhound
   end
 
   def define_field(name, field)
-    define_scope(name) do |value|
-      field[:options].merge(:conditions => setup_conditions(field, value))
+    if field[:aggregate]
+      define_scope(name) do |value|
+        field[:options].merge(:select => field[:aggregate], :having => setup_conditions(field, value))
+      end
+    else
+      define_scope(name) do |value|
+        field[:options].merge(:conditions => setup_conditions(field, value))
+      end
     end
   end
   private :define_field

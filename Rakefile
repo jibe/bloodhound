@@ -1,4 +1,4 @@
-require "spec/rake/spectask"
+require "rspec/core/rake_task"
 
 begin
   require "mg"
@@ -10,7 +10,3 @@ end
 
 desc "Default: run specs"
 task :default => :spec
-
-Spec::Rake::SpecTask.new do |task|
-  task.spec_opts << "--color"
-end
